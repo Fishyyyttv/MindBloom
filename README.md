@@ -82,31 +82,6 @@ src/
 └── middleware.ts                   # Auth + subscription gating
 ```
 
-## Deployment (Vercel)
-
-```bash
-npm run build   # Test build locally first
-vercel deploy
-```
-
-Make sure to add all environment variables in Vercel's dashboard under Settings → Environment Variables.
-
-Update your Stripe and Clerk webhook URLs to your production domain after deploying.
-
-## Auth Flow
-
-```
-/ (Landing)
-  └── /sign-up → Clerk
-        └── /subscribe → Stripe Checkout (7-day trial)
-              └── /app/chat → Main App (subscription gated)
-```
-
-Middleware in `src/middleware.ts` checks:
-1. Is the user signed in? (Clerk)
-2. Does `users.subscription_status` = `active` or `trialing`? (Supabase)
-3. If not → redirect to `/subscribe`
-
 ## Crisis Safety
 
 The AI chat includes:
@@ -114,14 +89,3 @@ The AI chat includes:
 - Immediate redirection to 988 Lifeline messaging when detected
 - Crisis banner on every app page
 - "Not a clinical service" disclaimers throughout
-
-## Customization
-
-- **Branding**: Update colors in `tailwind.config.ts` and the logo Heart icon
-- **AI Personality**: Edit `THERAPIST_SYSTEM_PROMPT` in `src/lib/groq.ts`
-- **Pricing**: Update `PLANS` in `src/lib/stripe.ts` and the subscribe page
-- **Skills/Content**: All therapeutic content is in `src/types/index.ts` — easy to edit
-
-## License
-
-MIT — build on it, fork it, make it your own.
