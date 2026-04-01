@@ -30,55 +30,6 @@ A full-stack subscription-based AI therapy companion built with Next.js 14, Cler
 | Animation | Framer Motion |
 | Deployment | Vercel |
 
-## Getting Started
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Set up environment variables
-
-```bash
-cp .env.local.example .env.local
-```
-
-Fill in all values in `.env.local`:
-
-#### Clerk (https://clerk.com)
-1. Create a new application
-2. Copy `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`
-3. In Clerk dashboard → Webhooks → Add endpoint: `https://yourdomain.com/api/webhooks/clerk`
-4. Copy the webhook signing secret to `CLERK_WEBHOOK_SECRET`
-
-#### Stripe (https://stripe.com)
-1. Create a product: "MindBloom Monthly" at $9.99/month
-2. Copy the Price ID to `STRIPE_PRICE_ID`
-3. Copy your publishable and secret keys
-4. Set up webhook endpoint: `https://yourdomain.com/api/webhooks/stripe`
-   - Events to listen for: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
-5. Copy webhook signing secret to `STRIPE_WEBHOOK_SECRET`
-
-#### Supabase (https://supabase.com)
-1. Create a new project
-2. Go to SQL Editor and run the contents of `supabase-schema.sql`
-3. Copy your project URL and anon key
-4. Copy your service role key (Settings → API)
-
-#### HUGGING FACE 
-1. Sign up and create an API key
-2. Add to `GROQ_API_KEY`
-3. Groq hosts Llama 3.3 70B for free (generous rate limits)
-
-### 3. Run the development server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
 ## Project Structure
 
 ```
