@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #FAF7F2;
+    color: #2C2C2C;
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: rgba(124, 154, 126, 0.25);
+    color: #2C2C2C;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(124, 154, 126, 0.35);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(124, 154, 126, 0.6);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white/80 backdrop-blur-sm rounded-2xl border border-sage-100 shadow-card;
+  }
+
+  .btn-primary {
+    @apply bg-sage-400 hover:bg-sage-500 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-sage-50 hover:bg-sage-100 text-sage-700 font-medium px-6 py-3 rounded-xl border border-sage-200 transition-all duration-200 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-sage-50 text-sage-700 font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
+  }
+
+  .input {
+    @apply w-full bg-white border border-sage-100 rounded-xl px-4 py-3 text-charcoal placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-transparent transition-all;
+  }
+
+  .textarea {
+    @apply w-full bg-white border border-sage-100 rounded-xl px-4 py-3 text-charcoal placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-transparent transition-all resize-none;
+  }
+
+  .section-title {
+    @apply font-serif text-3xl md:text-4xl text-charcoal leading-tight;
+  }
+
+  .label {
+    @apply text-sm font-medium text-sage-700 mb-1 block;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  .text-charcoal { color: #2C2C2C; }
+  .text-muted { color: #6B6B6B; }
+  .bg-cream { background-color: #FAF7F2; }
+  .bg-surface { background-color: #FFFDF9; }
+
+  .grain {
+    position: relative;
+  }
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.5s ease-out forwards;
+  }
+
+  .chat-bubble-user {
+    @apply bg-sage-400 text-white rounded-2xl rounded-br-sm px-4 py-3 max-w-[80%] ml-auto;
+  }
+
+  .chat-bubble-ai {
+    @apply bg-white border border-sage-100 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[85%] shadow-sm;
+  }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
