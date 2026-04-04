@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import { stripe, PLANS } from '@/lib/stripe'
+import { getStripeClient, PLANS } from '@/lib/stripe'
 import {
   buildRateLimitHeaders,
   buildRateLimitKey,
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
   const appUrl = resolveAppUrl(req)
 
   try {
+    const stripe = getStripeClient()
     let stripeCustomerId: string | undefined
 
     const supabaseAdmin = getSupabaseAdmin()

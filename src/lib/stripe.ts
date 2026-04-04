@@ -2,21 +2,30 @@ import 'server-only'
 import Stripe from 'stripe'
 import { getRequiredEnv } from '@/lib/env'
 
-const stripeSecretKey = getRequiredEnv('STRIPE_SECRET_KEY')
+let stripeClient: Stripe | null = null
 
-if (!stripeSecretKey.startsWith('sk_')) {
-  throw new Error('Invalid STRIPE_SECRET_KEY. Expected a Stripe secret key starting with "sk_".')
+export function getStripeClient(): Stripe {
+  if (stripeClient) return stripeClient
+
+  const stripeSecretKey = getRequiredEnv('STRIPE_SECRET_KEY')
+  if (!stripeSecretKey.startsWith('sk_')) {
+    throw new Error('Invalid STRIPE_SECRET_KEY. Expected a Stripe secret key starting with "sk_".')
+  }
+
+  stripeClient = new Stripe(stripeSecretKey, {
+    apiVersion: '2024-06-20',
+  })
+
+  return stripeClient
 }
-
-export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-06-20',
-})
 
 export const PLANS = {
   monthly: {
     name: 'MindBloom Monthly',
     price: 999,
-    priceId: getRequiredEnv('STRIPE_PRICE_ID'),
+    get priceId(): string {
+      return getRequiredEnv('STRIPE_PRICE_ID')
+    },
     interval: 'month' as const,
     trialDays: 7,
     features: [

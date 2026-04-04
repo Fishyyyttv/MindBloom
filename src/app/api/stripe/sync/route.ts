@@ -2,11 +2,12 @@ import { NextRequest } from 'next/server'
 import { redirect } from 'next/navigation'
 import { auth } from '@clerk/nextjs/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { stripe } from '@/lib/stripe'
+import { getStripeClient } from '@/lib/stripe'
 import { getAppSubscriptionStatus } from '@/lib/subscription-status'
 import { logEvent } from '@/lib/monitoring'
+import type Stripe from 'stripe'
 
-function getSubscriptionFromList(data: Awaited<ReturnType<typeof stripe.subscriptions.list>>['data']) {
+function getSubscriptionFromList(data: Stripe.ApiList<Stripe.Subscription>['data']) {
   if (!Array.isArray(data) || data.length === 0) return null
   return data[0]
 }
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
   }
 
   const supabaseAdmin = getSupabaseAdmin()
+  const stripe = getStripeClient()
 
   try {
     const { data: user, error } = await supabaseAdmin

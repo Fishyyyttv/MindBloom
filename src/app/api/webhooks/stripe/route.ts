@@ -1,4 +1,4 @@
-import { stripe } from '@/lib/stripe'
+import { getStripeClient } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { getAppSubscriptionStatus } from '@/lib/subscription-status'
 import { getRequiredEnv } from '@/lib/env'
@@ -21,7 +21,8 @@ async function findClerkIdByCustomerId(supabaseAdmin: ReturnType<typeof getSupab
 
 async function resolveClerkIdForSubscription(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  stripe: Stripe
 ): Promise<string | null> {
   const fromMetadata = subscription.metadata?.clerk_id?.trim()
   if (fromMetadata) return fromMetadata
@@ -51,7 +52,8 @@ async function resolveClerkIdForSubscription(
 }
 
 async function upsertSubscriptionState(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, subscription: Stripe.Subscription) {
-  const clerkId = await resolveClerkIdForSubscription(supabaseAdmin, subscription)
+  const stripe = getStripeClient()
+  const clerkId = await resolveClerkIdForSubscription(supabaseAdmin, subscription, stripe)
   const customerId = getCustomerId(subscription)
 
   if (!clerkId) {
@@ -117,6 +119,7 @@ export async function POST(req: Request) {
 
   let event: Stripe.Event
   try {
+    const stripe = getStripeClient()
     event = stripe.webhooks.constructEvent(body, sig, getRequiredEnv('STRIPE_WEBHOOK_SECRET'))
   } catch {
     return new Response('Webhook Error', { status: 400 })

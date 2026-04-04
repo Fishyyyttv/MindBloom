@@ -9,7 +9,7 @@ import {
 } from '@/lib/api-security'
 import { logEvent } from '@/lib/monitoring'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { stripe } from '@/lib/stripe'
+import { getStripeClient } from '@/lib/stripe'
 
 const WORKSHEET_TABLES = ['worksheet_completions', 'worksheets_completions'] as const
 
@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
   try {
     if (appUser?.stripe_customer_id) {
       try {
+        const stripe = getStripeClient()
         await stripe.customers.del(appUser.stripe_customer_id)
       } catch (stripeDeleteError: any) {
         await logEvent({
