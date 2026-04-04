@@ -21,6 +21,7 @@ export default function SubscribePage() {
   const [loading, setLoading] = useState(false)
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [showAgeError, setShowAgeError] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
 
   const handleSubscribe = async () => {
     if (!ageConfirmed) {
@@ -28,6 +29,7 @@ export default function SubscribePage() {
       return
     }
     setShowAgeError(false)
+    setCheckoutError('')
     setLoading(true)
     try {
       const res = await fetch('/api/stripe/create-checkout', {
@@ -35,10 +37,24 @@ export default function SubscribePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user?.emailAddresses[0]?.emailAddress }),
       })
-      const { url } = await res.json()
+      const contentType = res.headers.get('content-type') ?? ''
+      const payload = contentType.includes('application/json')
+        ? await res.json()
+        : { error: await res.text() }
+
+      if (!res.ok) {
+        const message = typeof payload?.error === 'string' && payload.error.trim().length > 0
+          ? payload.error.trim()
+          : 'Unable to start checkout. Please try again.'
+        throw new Error(message)
+      }
+
+      const { url } = payload
       if (url) window.location.href = url
+      else throw new Error('Checkout URL was not returned.')
     } catch (err) {
       console.error(err)
+      setCheckoutError(err instanceof Error ? err.message : 'Unable to start checkout. Please try again.')
       setLoading(false)
     }
   }
@@ -114,6 +130,7 @@ export default function SubscribePage() {
             <>Start 7-day free trial <ArrowRight className="w-4 h-4" /></>
           )}
         </button>
+        {checkoutError && <p className="mt-3 text-sm text-red-600">{checkoutError}</p>}
 
         <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted">
           <ShieldCheck className="w-3.5 h-3.5 text-sage-400" />

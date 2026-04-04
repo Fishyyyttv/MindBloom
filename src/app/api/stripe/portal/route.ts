@@ -7,9 +7,20 @@ import {
   getRequestPath,
   validateMutationOrigin,
 } from '@/lib/api-security'
-import { getRequiredEnv } from '@/lib/env'
+import { getOptionalEnv } from '@/lib/env'
 import { logEvent } from '@/lib/monitoring'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+
+function resolveAppUrl(req: Request): string {
+  const configured = getOptionalEnv('NEXT_PUBLIC_APP_URL')
+  if (configured) return configured.replace(/\/+$/, '')
+
+  try {
+    return new URL(req.url).origin
+  } catch {
+    return 'https://mymindbloom.app'
+  }
+}
 
 export async function POST(req: Request) {
   const { userId } = await auth()
@@ -39,21 +50,44 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429, headers })
   }
 
-  const supabaseAdmin = getSupabaseAdmin()
-  const { data: user } = await supabaseAdmin
-    .from('users')
-    .select('stripe_customer_id')
-    .eq('clerk_id', userId)
-    .single()
+  const appUrl = resolveAppUrl(req)
 
-  if (!user?.stripe_customer_id) {
-    return Response.json({ error: 'No billing account found' }, { status: 404, headers })
+  try {
+    const supabaseAdmin = getSupabaseAdmin()
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('stripe_customer_id')
+      .eq('clerk_id', userId)
+      .maybeSingle()
+
+    if (!user?.stripe_customer_id) {
+      return Response.json({ error: 'No billing account found' }, { status: 404, headers })
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripe_customer_id,
+      return_url: `${appUrl}/api/stripe/sync?clerk_id=${userId}`,
+    })
+
+    return Response.json({ url: session.url }, { headers })
+  } catch (error) {
+    const message =
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string'
+        ? (error as { message: string }).message
+        : 'Unable to open billing portal right now.'
+
+    await logEvent({
+      level: 'error',
+      category: 'stripe',
+      action: 'portal_session_failed',
+      userId,
+      route,
+      metadata: { message },
+    })
+
+    return Response.json({ error: message }, { status: 500, headers })
   }
-
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripe_customer_id,
-    return_url: `${getRequiredEnv('NEXT_PUBLIC_APP_URL')}/api/stripe/sync?clerk_id=${userId}`,
-  })
-
-  return Response.json({ url: session.url }, { headers })
 }
