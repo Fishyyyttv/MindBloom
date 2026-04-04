@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Heart } from 'lucide-react'
 
 export default function TermsPage() {
-  const updated = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const updated = 'April 4, 2026'
 
   return (
     <div className="min-h-screen bg-cream">
@@ -92,7 +92,7 @@ export default function TermsPage() {
             <ul className="list-disc list-inside text-muted space-y-1.5 mt-2 ml-2">
               <li>You will retain access to MindBloom until the end of your current billing period</li>
               <li>No further charges will be made</li>
-              <li>Your data will be retained for 90 days after cancellation, after which it may be deleted</li>
+              <li>Data retention and deletion are handled under the Privacy Policy and applicable law</li>
             </ul>
           </section>
 
@@ -114,7 +114,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-serif text-2xl text-charcoal mb-3">8. AI-generated content</h2>
-            <p className="text-muted leading-relaxed">MindBloom uses a large language model (Meta Llama 3.3 70B) to power the Bloom companion. You acknowledge that:</p>
+            <p className="text-muted leading-relaxed">MindBloom uses third-party AI models (currently Meta Llama 3.3 via Groq) to power the Bloom companion. You acknowledge that:</p>
             <ul className="list-disc list-inside text-muted space-y-1.5 mt-2 ml-2">
               <li>AI-generated responses may be inaccurate, incomplete, or inappropriate</li>
               <li>Bloom's responses do not constitute professional advice of any kind</li>

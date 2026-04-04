@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
   MessageCircle, BookOpen, Wind, Brain, Smile,
-  Shield, Zap, Flame, Heart, Menu, X, ExternalLink
+  Shield, Zap, Flame, Heart, Menu, X, ExternalLink, Bug
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +20,7 @@ const nav = [
   { href: '/app/skills',      label: 'DBT/CBT Skills',  icon: Brain,         color: 'text-indigo-600' },
   { href: '/app/coping',      label: 'Coping Toolkit',  icon: Zap,           color: 'text-orange-500' },
   { href: '/app/diary',       label: 'Journal',         icon: BookOpen,      color: 'text-blush-500' },
+  { href: '/app/report-bug',  label: 'Feedback',        icon: Bug,           color: 'text-rose-500' },
   { href: '/app/account',     label: 'Account',         icon: Heart,         color: 'text-sage-600' },
 ]
 

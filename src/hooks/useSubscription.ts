@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-client'
 
 export function useSubscription() {
   const { user, isLoaded } = useUser()

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Heart } from 'lucide-react'
 
 export default function PrivacyPage() {
-  const updated = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const updated = 'April 4, 2026'
 
   return (
     <div className="min-h-screen bg-cream">
@@ -75,6 +75,7 @@ export default function PrivacyPage() {
               <li>Detecting and preventing abuse, fraud, or policy violations</li>
               <li>Improving the app based on aggregated, anonymized usage patterns</li>
               <li>Responding to your support requests</li>
+              <li>Reviewing bug reports and feature requests you submit</li>
             </ul>
             <p className="text-muted leading-relaxed mt-3"><strong>We never use your mental health data, journal entries, or conversation history for advertising, marketing profiling, or sale to third parties.</strong></p>
           </section>
@@ -86,7 +87,7 @@ export default function PrivacyPage() {
               <li>Messages are transmitted to Groq's API over encrypted connections</li>
               <li>Groq's data processing is governed by their own privacy policy</li>
               <li>Conversation history is stored in our database (Supabase) to maintain context across sessions</li>
-              <li>We do not use your conversations to train AI models</li>
+              <li>We do not use your conversations for advertising profiles or sale; provider-side processing remains subject to provider terms</li>
             </ul>
             <p className="text-muted leading-relaxed mt-3">We strongly recommend not sharing highly sensitive personal identifiers (Social Security numbers, financial account numbers, etc.) in the chat.</p>
           </section>
@@ -128,12 +129,12 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-serif text-2xl text-charcoal mb-3">7. Data retention</h2>
-            <p className="text-muted leading-relaxed">We retain your data for as long as your account is active. Specifically:</p>
+            <p className="text-muted leading-relaxed">We retain data only as long as needed to operate the service and meet legal/security obligations. Specifically:</p>
             <ul className="list-disc list-inside text-muted space-y-1.5 mt-2 ml-2">
-              <li>Active accounts: data retained indefinitely while subscription is active</li>
-              <li>Canceled accounts: data retained for 90 days after cancellation, then deleted</li>
-              <li>Deleted accounts: all personal data deleted within 30 days of deletion request</li>
-              <li>Anonymized usage data may be retained longer for analytics purposes</li>
+              <li>Active accounts: data is retained to provide your account history and features</li>
+              <li>If you request deletion: we delete associated account data as part of the deletion workflow, except where retention is legally required</li>
+              <li>Security and abuse-prevention logs may be retained for compliance and operational integrity</li>
+              <li>De-identified or aggregated analytics may be retained longer</li>
             </ul>
           </section>
 

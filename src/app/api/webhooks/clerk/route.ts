@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { Webhook } from 'svix'
-import { supabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { getRequiredEnv } from '@/lib/env'
 
 export async function POST(req: Request) {
   const headerPayload = headers()
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
 
   let event: { type: string; data: Record<string, unknown> }
   try {
-    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!)
+    const wh = new Webhook(getRequiredEnv('CLERK_WEBHOOK_SECRET'))
     event = wh.verify(body, {
       'svix-id': svixId,
       'svix-timestamp': svixTimestamp,
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
     return new Response('Invalid signature', { status: 400 })
   }
 
+  const supabaseAdmin = getSupabaseAdmin()
   const { type, data } = event
 
   if (type === 'user.created') {

@@ -10,6 +10,19 @@
     },
     "src/app/api/webhooks/stripe/route.ts": {
       "maxDuration": 10
+    },
+    "src/app/api/notifications/dispatch/route.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/notifications/dispatch?kind=daily",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/notifications/dispatch?kind=weekly",
+      "schedule": "0 17 * * 1"
+    }
+  ]
 }

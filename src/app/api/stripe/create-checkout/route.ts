@@ -1,41 +1,80 @@
 import { auth } from '@clerk/nextjs/server'
 import { stripe, PLANS } from '@/lib/stripe'
-import { supabaseAdmin } from '@/lib/supabase'
+import {
+  buildRateLimitHeaders,
+  buildRateLimitKey,
+  checkRateLimit,
+  getRequestPath,
+  validateMutationOrigin,
+} from '@/lib/api-security'
+import { getRequiredEnv } from '@/lib/env'
+import { logEvent } from '@/lib/monitoring'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
+
+function normalizeEmail(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return value.trim().toLowerCase().slice(0, 320)
+}
 
 export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { email } = await req.json()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!
+  const route = getRequestPath(req)
+  const originCheck = validateMutationOrigin(req)
+  if (!originCheck.ok) {
+    await logEvent({
+      level: 'warn',
+      category: 'security',
+      action: 'stripe.checkout.origin_blocked',
+      userId,
+      route,
+      metadata: { reason: originCheck.reason },
+    })
+    return Response.json({ error: 'Invalid request origin' }, { status: 403 })
+  }
 
+  const rateLimit = checkRateLimit({
+    key: buildRateLimitKey('stripe:checkout', req, userId),
+    limit: 20,
+    windowMs: 60_000,
+  })
+  const headers = buildRateLimitHeaders(rateLimit)
+  if (!rateLimit.allowed) {
+    return Response.json({ error: 'Too many requests. Please try again shortly.' }, { status: 429, headers })
+  }
+
+  let body: any = {}
+  try {
+    body = await req.json()
+  } catch {
+    return Response.json({ error: 'Invalid JSON' }, { status: 400, headers })
+  }
+
+  const email = normalizeEmail(body?.email)
+  const appUrl = getRequiredEnv('NEXT_PUBLIC_APP_URL')
   let stripeCustomerId: string | undefined
 
+  const supabaseAdmin = getSupabaseAdmin()
   const { data: user } = await supabaseAdmin
     .from('users')
     .select('stripe_customer_id, subscription_status')
     .eq('clerk_id', userId)
     .single()
 
-  // Already active or trialing — send them to the app
   if (user?.subscription_status === 'active' || user?.subscription_status === 'trialing') {
-    return Response.json({ url: `${appUrl}/app/chat` })
+    return Response.json({ url: `${appUrl}/app/chat` }, { headers })
   }
 
   if (user?.stripe_customer_id) {
     stripeCustomerId = user.stripe_customer_id
 
-    // Check if this customer has EVER had a trial in Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: stripeCustomerId,
       limit: 10,
     })
 
-    const hadTrialBefore = subscriptions.data.some(sub =>
-      sub.trial_start !== null
-    )
-
-    // If they already used a trial, create checkout WITHOUT a trial
+    const hadTrialBefore = subscriptions.data.some((sub) => sub.trial_start !== null)
     if (hadTrialBefore) {
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
@@ -45,17 +84,19 @@ export async function POST(req: Request) {
         success_url: `${appUrl}/api/stripe/sync?clerk_id=${userId}`,
         cancel_url: `${appUrl}/subscribe`,
       })
-      return Response.json({ url: session.url })
+      return Response.json({ url: session.url }, { headers })
     }
   } else {
+    if (!email) {
+      return Response.json({ error: 'Email is required for first checkout.' }, { status: 400, headers })
+    }
     const customer = await stripe.customers.create({ email, metadata: { clerk_id: userId } })
     stripeCustomerId = customer.id
     await supabaseAdmin
       .from('users')
-      .upsert({ clerk_id: userId, email, stripe_customer_id: customer.id })
+      .upsert({ clerk_id: userId, email, stripe_customer_id: customer.id }, { onConflict: 'clerk_id' })
   }
 
-  // First time — give them the trial
   const session = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
     mode: 'subscription',
@@ -70,5 +111,14 @@ export async function POST(req: Request) {
     allow_promotion_codes: true,
   })
 
-  return Response.json({ url: session.url })
+  await logEvent({
+    level: 'info',
+    category: 'stripe',
+    action: 'checkout_session_created',
+    userId,
+    route,
+    metadata: { hasExistingCustomer: Boolean(user?.stripe_customer_id) },
+  })
+
+  return Response.json({ url: session.url }, { headers })
 }
