@@ -16,24 +16,32 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
+const APP_URL = 'https://mymindbloom.app'
+const APP_URL_WWW = 'https://www.mymindbloom.app'
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.mymindbloom.app/'),
-
-  title: 'MindBloom — AI Wellness Companion',
+  metadataBase: new URL(APP_URL),
+  title: 'MindBloom - AI Wellness Companion',
   description: 'Your compassionate AI wellness companion. CBT, DBT, journaling, breathing, and more.',
-
+  alternates: {
+    canonical: APP_URL,
+    languages: {
+      'x-default': APP_URL,
+      'en-US': APP_URL_WWW,
+    },
+  },
   openGraph: {
-    title: 'MindBloom — AI Wellness Companion',
+    title: 'MindBloom - AI Wellness Companion',
     description: 'A wellness companion that actually listens.',
+    url: APP_URL,
+    siteName: 'MindBloom',
     images: [{ url: '/og.png', width: 1200, height: 630 }],
     type: 'website',
   },
-
   twitter: {
     card: 'summary_large_image',
     images: ['/og.png'],
   },
-
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
