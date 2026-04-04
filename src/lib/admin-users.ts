@@ -1,4 +1,5 @@
 const LEGACY_ADMIN_USER_IDS = ['user_3Bk4ej2PiqeNmdL7Y9obghgEAXt']
+const LEGACY_ADMIN_EMAILS = ['fishyfishyflops@gmail.com']
 
 function parseIdList(value: string | undefined): string[] {
   if (!value) return []
@@ -42,7 +43,7 @@ export function getAdminEmails(): string[] {
   const legacyEnvEmails = parseEmailList(process.env.ADMIN_EMAILS)
   if (legacyEnvEmails.length > 0) return legacyEnvEmails
 
-  return []
+  return LEGACY_ADMIN_EMAILS
 }
 
 export function isAdminUserId(userId: string | null | undefined): boolean {
