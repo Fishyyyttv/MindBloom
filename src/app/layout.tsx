@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mindbloomtherapy.netlify.app'),
+  metadataBase: new URL('https://www.mymindbloom.app/'),
 
   title: 'MindBloom — AI Wellness Companion',
   description: 'Your compassionate AI wellness companion. CBT, DBT, journaling, breathing, and more.',

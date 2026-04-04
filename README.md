@@ -142,7 +142,8 @@ npm run dev
 ```
 
 5. Open:
-- `http://localhost:3000`
+- `https://mymindbloom.app`
+- `https://www.mymindbloom.app`
 
 ## Build and Run
 
