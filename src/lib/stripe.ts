@@ -2,7 +2,13 @@ import 'server-only'
 import Stripe from 'stripe'
 import { getRequiredEnv } from '@/lib/env'
 
-export const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'), {
+const stripeSecretKey = getRequiredEnv('STRIPE_SECRET_KEY')
+
+if (!stripeSecretKey.startsWith('sk_')) {
+  throw new Error('Invalid STRIPE_SECRET_KEY. Expected a Stripe secret key starting with "sk_".')
+}
+
+export const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2024-06-20',
 })
 
