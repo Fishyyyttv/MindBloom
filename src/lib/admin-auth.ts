@@ -1,6 +1,6 @@
 import 'server-only'
-import { auth } from '@clerk/nextjs/server'
-import { isAdminUserId } from '@/lib/admin-users'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import { isAdminEmail, isAdminUserId } from '@/lib/admin-users'
 import { getRequestIp, getRequestPath } from '@/lib/api-security'
 import { logEvent } from '@/lib/monitoring'
 
@@ -40,7 +40,15 @@ export async function requireAdmin({ action, req }: RequireAdminOptions): Promis
     }
   }
 
-  if (!isAdminUserId(userId)) {
+  let isAdmin = isAdminUserId(userId)
+
+  if (!isAdmin) {
+    const user = await currentUser()
+    const primaryEmail = user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress ?? null
+    isAdmin = isAdminEmail(primaryEmail)
+  }
+
+  if (!isAdmin) {
     await logEvent({
       level: 'warn',
       category: 'auth',

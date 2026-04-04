@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isAdminUserId } from '@/lib/admin-users'
+import { getAdminEmails, isAdminEmail, isAdminUserId } from '@/lib/admin-users'
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -17,8 +17,21 @@ const isPublicRoute = createRouteMatcher([
 const isAppRoute = createRouteMatcher(['/app(.*)'])
 const isAdminRoute = createRouteMatcher(['/app/admin(.*)', '/api/admin(.*)'])
 
+function extractEmailFromSessionClaims(claims: unknown): string | null {
+  if (!claims || typeof claims !== 'object') return null
+  const record = claims as Record<string, unknown>
+  const raw =
+    record.email ??
+    record.email_address ??
+    record.primary_email_address ??
+    null
+
+  return typeof raw === 'string' && raw.trim().length > 0 ? raw.trim().toLowerCase() : null
+}
+
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth()
+  const authData = await auth()
+  const { userId } = authData
   const { pathname } = req.nextUrl
 
   if (isPublicRoute(req)) {
@@ -36,7 +49,37 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(signInUrl)
     }
 
-    if (!isAdminUserId(userId)) {
+    let isAdmin = isAdminUserId(userId)
+
+    if (!isAdmin) {
+      const adminEmails = getAdminEmails()
+      if (adminEmails.length > 0) {
+        const emailFromClaims = extractEmailFromSessionClaims((authData as { sessionClaims?: unknown }).sessionClaims)
+        if (emailFromClaims && isAdminEmail(emailFromClaims)) {
+          isAdmin = true
+        } else {
+          try {
+            const supabase = createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.SUPABASE_SERVICE_ROLE_KEY!
+            )
+            const { data: user } = await supabase
+              .from('users')
+              .select('email')
+              .eq('clerk_id', userId)
+              .maybeSingle()
+
+            if (isAdminEmail(user?.email ?? null)) {
+              isAdmin = true
+            }
+          } catch {
+            // Fall through to forbidden if admin email can't be resolved.
+          }
+        }
+      }
+    }
+
+    if (!isAdmin) {
       if (pathname.startsWith('/api/admin')) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
