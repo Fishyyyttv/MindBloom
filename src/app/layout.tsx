@@ -8,6 +8,7 @@ const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-serif',
   display: 'swap',
+  preload: false,
 })
 
 const dmSans = DM_Sans({
@@ -51,7 +52,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/app/chat"
+      signUpFallbackRedirectUrl="/app/chat"
+    >
       <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
         <body className="bg-cream font-sans antialiased">
           {children}
